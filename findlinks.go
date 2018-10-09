@@ -4,16 +4,37 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
+	"github.com/instana/golang-sensor"
+	ot "github.com/opentracing/opentracing-go"
+	ext "github.com/opentracing/opentracing-go/ext"
+	"github.com/opentracing/opentracing-go/log"
 	"golang.org/x/net/html"
 )
 
+const (
+	// Service - use a tracer level global service name
+	Service = "Go-FindLinks"
+)
+
 func main() {
+	ot.InitGlobalTracer(instana.NewTracerWithOptions(&instana.Options{
+		Service:  Service,
+		LogLevel: instana.Debug}))
 	http.HandleFunc("/", handler)
+	
 	log.Fatal(http.ListenAndServe("0.0.0.0:8000", nil))
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	
+	
+	parentSpan, ctx := ot.StartSpanFromContext(ctx, "handler")
+	parentSpan.SetTag(string(ext.Component), "Go simple example app")
+	parentSpan.SetTag(string(ext.SpanKind), string(ext.SpanKindRPCServerEnum))
+	parentSpan.SetTag(string(ext.HTTPUrl), "/golang/simple/one")
+	parentSpan.SetTag(string(ext.HTTPMethod), "GET")
+	parentSpan.SetTag(string(ext.HTTPStatusCode), uint16(200))
+	parentSpan.LogFields(log.String("foo", "bar"))
 	url := r.URL.Query().Get("q")
 	fmt.Fprintf(w, "Page = %q\n", url)
 	if len(url) == 0 {
@@ -28,6 +49,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	for _, link := range links {
 		fmt.Fprintf(w, "Link = %q\n", link)
 	}
+	parentSpan.finish()
 }
 
 func parse(url string) (*html.Node, error) {
