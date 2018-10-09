@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"github.com/instana/golang-sensor"
 	ot "github.com/opentracing/opentracing-go"
@@ -49,7 +48,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	for _, link := range links {
 		fmt.Fprintf(w, "Link = %q\n", link)
 	}
-	parentSpan.finish()
+	parentSpan.Finish()
 }
 
 func parse(url string) (*html.Node, error) {
