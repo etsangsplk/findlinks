@@ -12,7 +12,7 @@ import (
 
 const (
 	// Service - use a tracer level global service name
-	Service = "Go-FindLinks"
+	Service = "FindLinksFork"
 )
 
 func main() {
