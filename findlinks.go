@@ -26,14 +26,15 @@ func main() {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	
-	
-	parentSpan, ctx := ot.StartSpanFromContext(ctx, "handler")
-	parentSpan.SetTag(string(ext.Component), "Go simple example app")
+	wireContext, _ := ot.GlobalTracer().Extract(ot.HTTPHeaders, ot.HTTPHeadersCarrier(req.Header))
+	parentSpan := ot.GlobalTracer().StartSpan("server", ext.RPCServerOption(wireContext))
 	parentSpan.SetTag(string(ext.SpanKind), string(ext.SpanKindRPCServerEnum))
-	parentSpan.SetTag(string(ext.HTTPUrl), "/golang/simple/one")
-	parentSpan.SetTag(string(ext.HTTPMethod), "GET")
-	parentSpan.SetTag(string(ext.HTTPStatusCode), uint16(200))
-	parentSpan.LogFields(log.String("foo", "bar"))
+	parentSpan.SetTag(string(ext.PeerHostname), req.Host)
+	parentSpan.SetTag(string(ext.HTTPUrl), req.URL.Path)
+	parentSpan.SetTag(string(ext.HTTPMethod), req.Method)
+	parentSpan.SetTag(string(ext.HTTPStatusCode), 200)
+	
+	
 	url := r.URL.Query().Get("q")
 	fmt.Fprintf(w, "Page = %q\n", url)
 	if len(url) == 0 {
