@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"fmt"
 	"net/http"
 	"github.com/instana/golang-sensor"
