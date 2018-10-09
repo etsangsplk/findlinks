@@ -24,7 +24,7 @@ func main() {
 	log.Fatal(http.ListenAndServe("0.0.0.0:8000", nil))
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func handler(w http.ResponseWriter, req *http.Request) {
 	
 	wireContext, _ := ot.GlobalTracer().Extract(ot.HTTPHeaders, ot.HTTPHeadersCarrier(req.Header))
 	parentSpan := ot.GlobalTracer().StartSpan("server", ext.RPCServerOption(wireContext))
@@ -35,7 +35,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	parentSpan.SetTag(string(ext.HTTPStatusCode), 200)
 	
 	
-	url := r.URL.Query().Get("q")
+	url := req.URL.Query().Get("q")
 	fmt.Fprintf(w, "Page = %q\n", url)
 	if len(url) == 0 {
 		return
